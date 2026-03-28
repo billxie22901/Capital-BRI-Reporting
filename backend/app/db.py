@@ -1,0 +1,19 @@
+import psycopg2
+import psycopg2.extras
+from flask import g, current_app
+
+
+def get_db():
+    """Return a per-request database connection with dict-like cursors."""
+    if "db" not in g:
+        g.db = psycopg2.connect(
+            current_app.config["DATABASE_URL"],
+            cursor_factory=psycopg2.extras.RealDictCursor,
+        )
+    return g.db
+
+
+def close_db(e=None):
+    db = g.pop("db", None)
+    if db is not None:
+        db.close()

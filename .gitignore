@@ -1,2 +1,26 @@
 Docs_for_AI/*
 References/*
+
+# Secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Gradle / Android
+mobile/.gradle/
+mobile/local.properties
+mobile/androidApp/build/
+mobile/shared/build/
+mobile/build/
+*.iml
+.idea/
+
+# macOS
+.DS_Store
+
+.claude/*

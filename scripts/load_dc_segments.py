@@ -28,9 +28,9 @@ import psycopg2.extras
 
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", "5432"))
-DB_NAME = os.getenv("DB_NAME", "capitalbri")
-DB_USER = os.getenv("DB_USER", "capitalbri")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "capitalbri")
+DB_NAME = os.getenv("DB_NAME", "capital_bri")
+DB_USER = os.getenv("DB_USER", "capital_bri")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "capital_bri_dev")
 
 GRAPH_VERSION = "dc-2026-03-28"
 PLACE = "Washington, DC, USA"

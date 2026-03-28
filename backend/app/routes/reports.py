@@ -66,11 +66,12 @@ def create_report():
         or len(conditions) > 0
         or data.get("cycling_experience_rating") is not None
         or data.get("pleasantness_rating") is not None
+        or bool((data.get("note") or "").strip())
     )
     if not has_qualifier:
         return jsonify({
             "error": "required_field_missing",
-            "details": "At least one of hazard_types, conditions, cycling_experience_rating, or pleasantness_rating is required",
+            "details": "At least one of hazard_types, conditions, cycling_experience_rating, pleasantness_rating, or note is required",
         }), 422
 
     # Validate segment UUID and existence
@@ -124,14 +125,14 @@ def create_report():
                 hazard_types, conditions,
                 infrastructure, bike_lane_availability,
                 cycling_experience_rating, pleasantness_rating,
-                client_lat, client_lon, raw_payload
+                client_lat, client_lon, note, raw_payload
             ) VALUES (
                 %s, %s, %s,
                 %s, %s,
                 %s, %s,
                 %s, %s,
                 %s, %s,
-                %s, %s, %s
+                %s, %s, %s, %s
             )
             RETURNING id, created_at
             """,
@@ -149,6 +150,7 @@ def create_report():
                 data.get("pleasantness_rating"),
                 data.get("client_lat"),
                 data.get("client_lon"),
+                (data.get("note") or "").strip() or None,
                 data.get("raw_payload"),
             ),
         )
@@ -206,7 +208,7 @@ def list_reports():
             r.hazard_types, r.conditions,
             r.infrastructure, r.bike_lane_availability,
             r.cycling_experience_rating, r.pleasantness_rating,
-            r.pct_along_segment
+            r.pct_along_segment, r.note
         FROM report r
         {join}
         {where}
@@ -235,6 +237,7 @@ def list_reports():
             "cycling_experience_rating": row["cycling_experience_rating"],
             "pleasantness_rating": row["pleasantness_rating"],
             "pct_along_segment": row["pct_along_segment"],
+            "note": row["note"],
             # client_lat/client_lon intentionally omitted
         })
 

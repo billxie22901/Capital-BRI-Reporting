@@ -166,7 +166,17 @@ fun ReportFormScreen(
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            // Optional free-text note
+            FormSection(title = "Notes (optional)") {
+                OutlinedTextField(
+                    value = state.note,
+                    onValueChange = { viewModel.setNote(it) },
+                    placeholder = { Text("Anything else about this stretch of road…") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    maxLines = 6
+                )
+            }
 
             Button(
                 onClick = { viewModel.submit(segmentId, pctAlong) },

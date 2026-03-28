@@ -58,7 +58,7 @@ class ApiClient(private val baseUrl: String = ApiConfig.BASE_URL) {
 
     suspend fun getNearestSegments(
         lat: Double, lon: Double,
-        radiusM: Int = 50,
+        radiusM: Int = 300,
         limit: Int = 3
     ): Result<NearestResponse> {
         return try {

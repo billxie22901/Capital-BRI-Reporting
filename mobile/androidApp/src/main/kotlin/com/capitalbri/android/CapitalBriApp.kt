@@ -4,6 +4,8 @@ import android.app.Application
 import com.capitalbri.shared.api.ApiClient
 import com.capitalbri.shared.repository.RemoteReportRepository
 import com.capitalbri.shared.repository.RemoteSegmentRepository
+import org.maplibre.android.MapLibre
+import org.maplibre.android.WellKnownTileServer
 
 class CapitalBriApp : Application() {
 
@@ -13,6 +15,6 @@ class CapitalBriApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // MapLibre initializes automatically on first MapView creation
+        MapLibre.getInstance(this, "", WellKnownTileServer.MapLibre)
     }
 }

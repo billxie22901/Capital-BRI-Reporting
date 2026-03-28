@@ -5,9 +5,10 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -60,11 +61,12 @@ fun MapScreen(
         MapLibreMapView(
             modifier = Modifier.fillMaxSize(),
             segments = segments,
-            selectedSegmentId = when (val s = uiState) {
-                is MapUiState.SegmentSuggested -> s.current?.id
-                is MapUiState.SegmentConfirmed -> s.candidate.id
+            selectedCandidate = when (val s = uiState) {
+                is MapUiState.SegmentSuggested -> s.current
+                is MapUiState.SegmentConfirmed -> s.candidate
                 else -> null
             },
+            isReportingActive = uiState !is MapUiState.Browsing,
             locationPermissionGranted = locationPermissionGranted,
             onLocationUpdate = { lat, lon, accuracy ->
                 currentLat = lat
@@ -77,6 +79,9 @@ fun MapScreen(
             },
             onSegmentTapped = { segmentId ->
                 viewModel.onSegmentTapped(segmentId)
+            },
+            onMapTapped = { lat, lon ->
+                viewModel.onMapTapped(lat, lon)
             }
         )
 
@@ -120,7 +125,7 @@ fun MapScreen(
                     viewModel.onReportFabTapped(currentLat, currentLon, currentAccuracy)
                 }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Report")
+                Icon(Icons.Default.Warning, contentDescription = "Report")
             }
         }
 
@@ -130,6 +135,8 @@ fun MapScreen(
                 SegmentConfirmSheet(
                     segmentName = state.current?.name ?: "Unknown road",
                     distanceMeters = state.current?.distance_m,
+                    canRetractBack = state.backExtensions > 0,
+                    canRetractForward = state.forwardExtensions > 0,
                     onConfirm = {
                         viewModel.confirmSegment()
                         val candidate = state.current ?: return@SegmentConfirmSheet
@@ -140,7 +147,12 @@ fun MapScreen(
                         )
                     },
                     onNotThisRoad = { viewModel.nextCandidate() },
-                    onDismiss = { viewModel.cancelReporting() }
+                    onDismiss = { viewModel.cancelReporting() },
+                    onExtendBack = { viewModel.extendSegmentBack() },
+                    onRetractBack = { viewModel.retractSegmentBack() },
+                    onExtendForward = { viewModel.extendSegmentForward() },
+                    onRetractForward = { viewModel.retractSegmentForward() },
+                    onReset = { viewModel.resetSegment() }
                 )
             }
             is MapUiState.NoSegmentFound -> {
@@ -153,7 +165,7 @@ fun MapScreen(
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Tap a road on the map to select it, then tap Report again.")
+                        Text("Tap a road on the map to select it.")
                         TextButton(onClick = { viewModel.cancelReporting() }) {
                             Text("Cancel")
                         }
@@ -196,9 +208,16 @@ fun MapScreen(
 fun SegmentConfirmSheet(
     segmentName: String,
     distanceMeters: Double?,
+    canRetractBack: Boolean,
+    canRetractForward: Boolean,
     onConfirm: () -> Unit,
     onNotThisRoad: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onExtendBack: () -> Unit,
+    onRetractBack: () -> Unit,
+    onExtendForward: () -> Unit,
+    onRetractForward: () -> Unit,
+    onReset: () -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -225,7 +244,48 @@ fun SegmentConfirmSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            // Segment length controls — left column controls start of segment, right column controls end
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Back-end (start) controls
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(
+                        onClick = onExtendBack,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+                    ) { Text("← Extend", style = MaterialTheme.typography.labelSmall) }
+                    OutlinedButton(
+                        onClick = onRetractBack,
+                        enabled = canRetractBack,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+                    ) { Text("← Retract", style = MaterialTheme.typography.labelSmall) }
+                }
+                // Reset in the middle
+                TextButton(onClick = onReset, enabled = canRetractBack || canRetractForward) {
+                    Text("Reset", style = MaterialTheme.typography.bodySmall)
+                }
+                // Forward-end (end) controls
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(
+                        onClick = onExtendForward,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+                    ) { Text("Extend →", style = MaterialTheme.typography.labelSmall) }
+                    OutlinedButton(
+                        onClick = onRetractForward,
+                        enabled = canRetractForward,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+                    ) { Text("Retract →", style = MaterialTheme.typography.labelSmall) }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Action row: Cancel exits reporting. "Not this road" tries the next nearest candidate.
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
                     onClick = onDismiss,

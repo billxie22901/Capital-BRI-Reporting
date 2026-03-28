@@ -83,7 +83,7 @@ def nearest_segments():
     if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
         return jsonify({"error": "invalid_parameter", "details": "lat/lon outside WGS84 range"}), 400
 
-    radius_m = min(int(request.args.get("radius_m", 50)), 200)
+    radius_m = min(int(request.args.get("radius_m", 100)), 1000)
     limit = min(int(request.args.get("limit", 3)), 5)
     version = current_app.config["CURRENT_GRAPH_VERSION"]
 

@@ -16,7 +16,8 @@ data class ReportRequest(
     val infrastructure: String? = null,
     val bike_lane_availability: String? = null,
     val client_lat: Double? = null,
-    val client_lon: Double? = null
+    val client_lon: Double? = null,
+    val note: String? = null
 )
 
 @Serializable
@@ -38,7 +39,8 @@ data class ReportListItem(
     val infrastructure: String? = null,
     val bike_lane_availability: String? = null,
     val cycling_experience_rating: Int? = null,
-    val pleasantness_rating: Int? = null
+    val pleasantness_rating: Int? = null,
+    val note: String? = null
 )
 
 // Enum constants

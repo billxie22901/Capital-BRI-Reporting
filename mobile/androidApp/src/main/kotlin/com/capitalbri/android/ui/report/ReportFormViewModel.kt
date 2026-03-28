@@ -24,6 +24,7 @@ data class ReportFormState(
     val bikeLaneAvailability: String? = null,
     val cyclingExperienceRating: Int? = null,
     val pleasantnessRating: Int? = null,
+    val note: String = "",
     val isSubmitting: Boolean = false,
     val submitSuccess: Boolean = false,
     val errorMessage: String? = null,
@@ -77,6 +78,10 @@ class ReportFormViewModel(app: Application) : AndroidViewModel(app) {
         _formState.value = _formState.value.copy(pleasantnessRating = value, errorMessage = null)
     }
 
+    fun setNote(value: String) {
+        _formState.value = _formState.value.copy(note = value, errorMessage = null)
+    }
+
     fun submit(segmentId: String, pctAlong: Double) {
         val state = _formState.value
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
@@ -89,7 +94,8 @@ class ReportFormViewModel(app: Application) : AndroidViewModel(app) {
             hazardTypes = state.selectedHazardTypes.toList(),
             conditions = state.selectedConditions.toList(),
             cyclingExperienceRating = state.cyclingExperienceRating,
-            pleasantnessRating = state.pleasantnessRating
+            pleasantnessRating = state.pleasantnessRating,
+            note = state.note
         )
 
         if (!validation.isValid) {
@@ -111,7 +117,8 @@ class ReportFormViewModel(app: Application) : AndroidViewModel(app) {
                 infrastructure = state.infrastructure,
                 bike_lane_availability = state.bikeLaneAvailability,
                 cycling_experience_rating = state.cyclingExperienceRating,
-                pleasantness_rating = state.pleasantnessRating
+                pleasantness_rating = state.pleasantnessRating,
+                note = state.note.trim().takeIf { it.isNotEmpty() }
             )
 
             reportRepository.submitReport(request)

@@ -1,6 +1,8 @@
 Docs_for_AI/*
 References/*
 
+scripts/cache/*
+
 # Secrets — never commit
 .env
 

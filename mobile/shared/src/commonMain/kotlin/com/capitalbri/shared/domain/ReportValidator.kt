@@ -12,7 +12,8 @@ object ReportValidator {
         hazardTypes: List<String>,
         conditions: List<String>,
         cyclingExperienceRating: Int?,
-        pleasantnessRating: Int?
+        pleasantnessRating: Int?,
+        note: String? = null
     ): ValidationResult {
         val errors = mutableListOf<String>()
 
@@ -22,10 +23,11 @@ object ReportValidator {
         val hasQualifier = hazardTypes.isNotEmpty() ||
                 conditions.isNotEmpty() ||
                 cyclingExperienceRating != null ||
-                pleasantnessRating != null
+                pleasantnessRating != null ||
+                !note.isNullOrBlank()
 
         if (!hasQualifier) {
-            errors.add("At least one of: hazard types, surface conditions, experience rating, or pleasantness rating is required")
+            errors.add("At least one of: hazard types, surface conditions, experience rating, pleasantness rating, or a note is required")
         }
 
         cyclingExperienceRating?.let {
